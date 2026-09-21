@@ -1,5 +1,5 @@
 {
-  "name": "classeviva-proxy-sicuro",
+  "name": "diarioviva",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
