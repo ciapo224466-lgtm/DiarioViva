@@ -1,33 +1,56 @@
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // O gestore fetch nativo su Node 18+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Endpoint per il Login
+// Endpoint di test per verificare che Render sia attivo
+app.get('/ping', (req, res) => {
+  res.json({ status: 'ok', message: 'Server Render attivo' });
+});
+
+// Endpoint di Login proxy verso ClasseViva
 app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username e password obbligatori' });
+  }
+
   try {
-    const response = await fetch('https://web.spaggiari.eu/rest/v1/auth/login', {
+    const cvResponse = await fetch('https://web.spaggiari.eu/rest/v1/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'CVReq/20201110',
-        'Z-Dev-Apikey': '+4865672a9390b0271'
+        'User-Agent': 'CVApp/21.1.0'
       },
       body: JSON.stringify({
-        ident: req.body.ident,
-        pwd: req.body.pwd
+        ident: null,
+        pass: password,
+        uid: username
       })
     });
 
-    const data = await response.json();
-    res.status(response.status).json(data);
+    const data = await cvResponse.json();
+
+    if (!cvResponse.ok) {
+      return res.status(cvResponse.status).json({
+        error: 'Autenticazione ClasseViva fallita',
+        details: data
+      });
+    }
+
+    // Restituisce i token e le info restituite da Spaggiari
+    return res.json(data);
+
   } catch (error) {
-    res.status(500).json({ error: 'Errore durante la connessione a ClasseViva' });
+    return res.status(500).json({ error: 'Errore interno del proxy', details: error.message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server attivo sulla porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server Render attivo sulla porta ${PORT}`);
+});
