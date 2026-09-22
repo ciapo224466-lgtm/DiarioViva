@@ -386,54 +386,31 @@ async function syncClasseViva(){
     
   logCV('Connessione al tuo Proxy Render...');    
     
-  // Tentativo standard  
   try {    
     var resAuth = await fetch(PROXY_URL + '/api/login', {    
       method: 'POST',    
       headers: { 'Content-Type': 'application/json' },    
-      body: JSON.stringify({ ident: user, pwd: pass })    
+      body: JSON.stringify({ username: user, password: pass })    
     });    
     
-    if(!resAuth.ok) throw new Error('Risposta HTTP ' + resAuth.status);    
-    var data = await resAuth.json();    
+    var data = await resAuth.json();  
+
+    if(!resAuth.ok) {
+      logCV('ERRORE (' + resAuth.status + '): ' + (data.error || 'Credenziali non valide'));
+      return;
+    }
   
     if(data.token) {  
       logCV('CONNESSO CON SUCCESSO! Token ottenuto.');  
       el('cvStatus').className = 'cv-status connected';  
       el('cvStatus').textContent = '● Collegato come ' + (data.firstName || user);  
       state.cvConnected = true;  
-      return;  
     } else {  
-      logCV('ERRORE: Credenziali errate o rifiutate da ClasseViva.');  
-      return;  
+      logCV('ERRORE: Risposta inattesa da ClasseViva.');  
     }  
   } catch(err) {    
-    logCV('Attenzione: richiesta bloccata dal browser (' + err.message + ').');    
+    logCV('ERRORE DI RETE: Impossibile raggiungere il server Proxy.');    
   }    
-  
-  // Fallback se aperto da File Locale dentro Edge/Safari  
-  logCV('Tentativo con Proxy Bypasser per File Locali...');  
-  try {  
-    var fallbackUrl = 'https://corsproxy.io/?' + encodeURIComponent(PROXY_URL + '/api/login');  
-    var resFallback = await fetch(fallbackUrl, {  
-      method: 'POST',  
-      headers: { 'Content-Type': 'application/json' },  
-      body: JSON.stringify({ ident: user, pwd: pass })  
-    });  
-  
-    var data = await resFallback.json();  
-    if(data.token) {  
-      logCV('CONNESSO CON SUCCESSO via Fallback!');  
-      el('cvStatus').className = 'cv-status connected';  
-      el('cvStatus').textContent = '● Collegato come ' + (data.firstName || user);  
-      state.cvConnected = true;  
-    } else {  
-      logCV('ERRORE: Credenziali non valide.');  
-    }  
-  } catch(errFallback) {  
-    logCV('ERRORE CRITICO: Il browser blinda i file locali.');  
-    logCV('SOLUZIONE: Apri il file con SAFARI anziché Edge, oppure attiva GitHub Pages.');  
-  }  
 }    
     
 function init(){    
@@ -474,4 +451,4 @@ document.addEventListener('DOMContentLoaded', init);
 })();    
 </script>    
 </body>    
-</html>  
+</html>
