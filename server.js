@@ -1,66 +1,45 @@
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch'); // Se usi Node 18+ puoi usare anche il fetch nativo
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-// Endpoint di test per il tasto "Test Server Render"
-app.get('/ping', (req, res) => {
-  res.json({ status: 'ok', message: 'Server Render attivo e pronto' });
-});
+const CV_BASE = 'https://www.cviva.it/api/v1';
 
-// Endpoint di Login verso ClasseViva
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
+  // Gestisce sia il nuovo che il vecchio formato di parametri
+  const username = req.body.username || req.body.ident;
+  const password = req.body.password || req.body.pass || req.body.pwd;
 
-  // Controllo validità input per evitare Bad Request dal client
   if (!username || !password) {
-    return res.status(400).json({ 
-      error: 'Parametri mancanti: inserire username e password' 
-    });
+    return res.status(400).json({ error: 'Username e password obbligatori' });
   }
 
   try {
-    // Chiamata diretta all'API ufficiale di ClasseViva (Spaggiari)
-    const cvResponse = await fetch('https://web.spaggiari.eu/rest/v1/auth/login', {
+    const response = await fetch(`${CV_BASE}/auth/login/`, {
       method: 'POST',
-      headers: {
+      headers: { 
         'Content-Type': 'application/json',
-        'User-Agent': 'CVApp/21.1.0',
-        'Z-Dev-Apikey': '+A9342232155444' // Key di sistema per le API Spaggiari
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
       },
-      body: JSON.stringify({
-        ident: null,
-        pass: password,
-        uid: username
-      })
+      body: JSON.stringify({ ident: username, pass: password })
     });
 
-    const data = await cvResponse.json();
+    const data = await response.json();
 
-    if (!cvResponse.ok) {
-      return res.status(cvResponse.status).json({
-        error: 'Errore durante l autenticazione su ClasseViva',
-        details: data
+    if (!response.ok) {
+      return res.status(response.status).json({ 
+        error: data.message || data.error || 'Credenziali non valide o errore ClasseViva' 
       });
     }
 
-    // Risposta di successo inoltrata al frontend
-    return res.json(data);
-
-  } catch (error) {
-    console.error('Errore Proxy Render:', error);
-    return res.status(500).json({ 
-      error: 'Errore interno del server Render', 
-      details: error.message 
-    });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Errore di connessione a ClasseViva' });
   }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`Server avviato sulla porta ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Proxy attivo sulla porta ${PORT}`));
