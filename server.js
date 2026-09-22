@@ -7,11 +7,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const CV_BASE = 'https://www.cviva.it/api/v1';
+// Endpoint ufficiale API ClasseViva
+const CV_BASE = 'https://user-api.classeviva.it/v1';
 
-// Endpoint per la Login
+const COMMON_HEADERS = {
+  'Content-Type': 'application/json',
+  'User-Agent': 'CVApp/1.0.0 (com.spaggiari.classeviva)',
+  'Accept': 'application/json'
+};
+
+// Endpoint di Login
 app.post('/api/login', async (req, res) => {
-  // Gestisce sia username/password che ident/pass/pwd per massima compatibilità
   const username = req.body.username || req.body.ident;
   const password = req.body.password || req.body.pass || req.body.pwd;
 
@@ -22,10 +28,7 @@ app.post('/api/login', async (req, res) => {
   try {
     const response = await fetch(`${CV_BASE}/auth/login/`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      },
+      headers: COMMON_HEADERS,
       body: JSON.stringify({ ident: username, pass: password })
     });
 
@@ -39,11 +42,12 @@ app.post('/api/login', async (req, res) => {
 
     res.json(data);
   } catch (err) {
+    console.error('Errore durante la chiamata a ClasseViva:', err);
     res.status(500).json({ error: 'Errore di connessione a ClasseViva' });
   }
 });
 
-// Endpoint per scaricare l'Agenda
+// Endpoint per l'Agenda
 app.get('/api/agenda/:custCode/:begin/:end', async (req, res) => {
   const { custCode, begin, end } = req.params;
   const token = req.headers['z-auth-token'];
@@ -55,8 +59,8 @@ app.get('/api/agenda/:custCode/:begin/:end', async (req, res) => {
   try {
     const response = await fetch(`${CV_BASE}/students/${custCode}/agenda/all/${begin}/${end}`, {
       headers: { 
-        'Z-Auth-Token': token,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        ...COMMON_HEADERS,
+        'Z-Auth-Token': token
       }
     });
 
