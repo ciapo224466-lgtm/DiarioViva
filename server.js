@@ -7,13 +7,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Endpoint ufficiale API ClasseViva
 const CV_BASE = 'https://user-api.classeviva.it/v1';
 
-const COMMON_HEADERS = {
+// Header necessari per emulare l'app ufficiale ClasseViva
+const CV_HEADERS = {
   'Content-Type': 'application/json',
   'User-Agent': 'CVApp/1.0.0 (com.spaggiari.classeviva)',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Host': 'user-api.classeviva.it'
 };
 
 // Endpoint di Login
@@ -28,7 +29,7 @@ app.post('/api/login', async (req, res) => {
   try {
     const response = await fetch(`${CV_BASE}/auth/login/`, {
       method: 'POST',
-      headers: COMMON_HEADERS,
+      headers: CV_HEADERS,
       body: JSON.stringify({ ident: username, pass: password })
     });
 
@@ -36,14 +37,14 @@ app.post('/api/login', async (req, res) => {
 
     if (!response.ok) {
       return res.status(response.status).json({ 
-        error: data.message || data.error || 'Credenziali non valide o errore ClasseViva' 
+        error: data.message || data.error || 'Credenziali non valide o rifiutate da ClasseViva' 
       });
     }
 
     res.json(data);
   } catch (err) {
-    console.error('Errore durante la chiamata a ClasseViva:', err);
-    res.status(500).json({ error: 'Errore di connessione a ClasseViva' });
+    console.error('Errore durante la connessione a ClasseViva:', err);
+    res.status(500).json({ error: 'Impossibile raggiungere i server di ClasseViva (IP Bloccato)' });
   }
 });
 
@@ -59,7 +60,7 @@ app.get('/api/agenda/:custCode/:begin/:end', async (req, res) => {
   try {
     const response = await fetch(`${CV_BASE}/students/${custCode}/agenda/all/${begin}/${end}`, {
       headers: { 
-        ...COMMON_HEADERS,
+        ...CV_HEADERS,
         'Z-Auth-Token': token
       }
     });
