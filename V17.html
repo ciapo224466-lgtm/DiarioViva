@@ -1,0 +1,477 @@
+<!doctype html>    
+<html lang="it">    
+<head>    
+<meta charset="utf-8">    
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">    
+<title>DiarioViva V17</title>    
+<style>    
+:root {    
+  --accent: #3478f6;    
+  --accent2: #06b6d4;    
+  --bg: #f2f5f9;    
+  --card: rgba(255, 255, 255, 0.85);    
+  --card-solid: #ffffff;    
+  --text: #172033;    
+  --muted: #6d7688;    
+  --line: rgba(223, 228, 236, 0.8);    
+  --danger: #ff453a;    
+  --bg-image: none;    
+  --overlay: rgba(242, 245, 249, 0.35);    
+}    
+    
+* { box-sizing: border-box; }    
+html, body {    
+  margin: 0; padding: 0;    
+  min-height: 100vh;    
+  background-color: var(--bg);    
+  color: var(--text);    
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;    
+  -webkit-font-smoothing: antialiased;    
+}    
+button, input, select, textarea { font: inherit; }    
+button { cursor: pointer; border: none; outline: none; }    
+    
+body.has-bg {    
+  background-image: var(--bg-image);    
+  background-size: cover;    
+  background-position: center;    
+  background-attachment: fixed;    
+}    
+body.has-bg::before {    
+  content: "";    
+  position: fixed;    
+  inset: 0;    
+  background: var(--overlay);    
+  backdrop-filter: blur(10px);    
+  -webkit-backdrop-filter: blur(10px);    
+  z-index: -1;    
+}    
+    
+body.dark {    
+  --bg: #0d0f12;    
+  --card: rgba(22, 25, 32, 0.85);    
+  --card-solid: #1b1e25;    
+  --text: #f4f5f7;    
+  --muted: #a7adba;    
+  --line: rgba(48, 53, 65, 0.8);    
+  --overlay: rgba(10, 12, 16, 0.65);    
+}    
+    
+.app { min-height: 100vh; }    
+.top {    
+  position: sticky; top: 0; z-index: 10;    
+  background: var(--card);    
+  border-bottom: 1px solid var(--line);    
+  padding: 12px 16px;    
+  backdrop-filter: blur(25px);    
+  -webkit-backdrop-filter: blur(25px);    
+}    
+.toprow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }    
+.brand { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }    
+.brand span { color: var(--accent); }    
+.nav { display: flex; gap: 6px; background: rgba(0,0,0,0.06); padding: 4px; border-radius: 12px; }    
+body.dark .nav { background: rgba(255,255,255,0.08); }    
+.nav button, .iconbtn {    
+  background: transparent; color: var(--muted);    
+  border-radius: 99px; padding: 8px 14px; font-weight: 700; font-size: 14px;    
+  transition: all 0.2s ease;    
+}    
+.nav button.active { background: var(--card-solid); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }    
+.iconbtn { font-size: 18px; padding: 7px 10px; }    
+    
+main { max-width: 1500px; margin: 0 auto; padding: 20px; }    
+.page { display: none; }    
+.page.active { display: block; }    
+    
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }    
+.hero h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }    
+.pill {    
+  background: var(--card); border: 1px solid var(--line);    
+  border-radius: 999px; padding: 7px 14px; color: var(--muted);    
+  font-weight: 700; font-size: 13px; backdrop-filter: blur(10px);    
+  white-space: nowrap;    
+}    
+    
+.weekbar {    
+  display: flex;    
+  align-items: center;    
+  justify-content: space-between;    
+  gap: 12px;    
+  margin-bottom: 20px;    
+  background: var(--card);    
+  padding: 10px 16px;    
+  border-radius: 16px;    
+  border: 1px solid var(--line);    
+  flex-wrap: wrap;    
+}    
+.weekbar .nav-group { display: flex; align-items: center; gap: 8px; }    
+.weekbar .title { font-weight: 800; font-size: 17px; text-align: center; flex: 1; min-width: 200px; }    
+.btn-today {    
+  background: var(--card-solid);    
+  border: 1px solid var(--line);    
+  padding: 8px 16px;    
+  border-radius: 10px;    
+  font-weight: 700;    
+  font-size: 13px;    
+  color: var(--text);    
+}    
+.round { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--card-solid); color: var(--text); font-weight: 800; }    
+    
+.week { display: grid; grid-template-columns: repeat(5, minmax(230px, 1fr)); gap: 14px; overflow-x: auto; padding-bottom: 10px; }    
+.day { background: var(--card); border: 1px solid var(--line); border-radius: 20px; min-height: 340px; overflow: hidden; backdrop-filter: blur(14px); display: flex; flex-direction: column; }    
+.dayhead { padding: 14px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 15%, transparent), transparent); }    
+.dayname { font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }    
+.daydate { font-size: 19px; font-weight: 800; margin-top: 2px; }    
+.tasks { padding: 12px; flex: 1; display: flex; flex-direction: column; }    
+.empty { padding: 40px 10px; text-align: center; color: var(--muted); font-size: 14px; font-weight: 600; }    
+.task {    
+  border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 10px;    
+  background: var(--card-solid); box-shadow: 0 2px 8px rgba(0,0,0,0.04);    
+  position: relative; overflow: hidden;    
+}    
+.task:before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--subject, #3478f6); }    
+.tasktop { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }    
+.subject { font-weight: 800; font-size: 14px; flex: 1; }    
+.badge { font-size: 10px; background: var(--accent); color: #fff; padding: 3px 7px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }    
+.badge.cv { background: #10b981; }    
+.tasktext { font-size: 14px; line-height: 1.4; color: var(--text); margin-bottom: 10px; word-break: break-word; }    
+.task.done { opacity: 0.55; }    
+.task.done .tasktext { text-decoration: line-through; }    
+.check { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }    
+.check input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }    
+    
+.add {     
+  width: 100%;     
+  border: 2px dashed var(--accent);     
+  background: rgba(52, 120, 246, 0.05);     
+  color: var(--accent);     
+  border-radius: 14px;     
+  padding: 12px;     
+  font-weight: 800;     
+  font-size: 14px;    
+  margin-top: auto;    
+  transition: background 0.2s;    
+}    
+.add:hover { background: rgba(52, 120, 246, 0.12); }    
+    
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 50; backdrop-filter: blur(6px); }    
+.modal.show { display: flex; }    
+.sheet { background: var(--card-solid); color: var(--text); width: min(650px, 100%); border-radius: 24px 24px 0 0; padding: 24px 20px; max-height: 90vh; overflow: auto; }    
+.sheet h2 { margin: 0 0 16px; font-weight: 800; }    
+.form { display: grid; gap: 14px; }    
+.form label { font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; }    
+.form input, .form select, .form textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--text); padding: 12px; font-weight: 600; }    
+.actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }    
+.primary, .secondary, .danger { border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 800; font-size: 14px; }    
+.primary { background: var(--accent); color: white; flex: 1; }    
+.secondary { background: var(--bg); color: var(--text); }    
+.danger { background: rgba(255, 69, 58, 0.15); color: var(--danger); }    
+    
+.settings { display: grid; gap: 16px; }    
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px; backdrop-filter: blur(14px); }    
+    
+.cv-status { padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }    
+.cv-status.connected { background: rgba(16, 185, 129, 0.18); color: #10b981; }    
+.cv-status.disconnected { background: rgba(239, 68, 68, 0.18); color: #ef4444; }    
+.logbox { background: #0b0f19; color: #34d399; font-family: monospace; font-size: 12px; padding: 12px; border-radius: 12px; height: 160px; overflow-y: auto; margin-top: 12px; border: 1px solid var(--line); line-height: 1.5; }    
+    
+@media(max-width:700px){    
+  main { padding: 12px; }    
+  .weekbar { flex-direction: column; align-items: stretch; }    
+  .weekbar .title { text-align: center; }    
+  .week { grid-template-columns: repeat(5, 270px); }    
+}    
+</style>    
+</head>    
+<body>    
+<div class="app">    
+  <header class="top">    
+    <div class="toprow">    
+      <div class="brand">Diario<span>Viva</span> <small style="font-size:12px; color:var(--muted)">v17</small></div>    
+      <div class="nav">    
+        <button id="navDiary" class="active" type="button">Diario</button>    
+        <button id="navCV" type="button">ClasseViva</button>    
+        <button id="navSettings" type="button">Impostazioni</button>    
+      </div>    
+      <button class="iconbtn" id="darkBtn" type="button" title="Modalità scura">☾</button>    
+    </div>    
+  </header>    
+    
+  <main>    
+    <!-- DIARIO PAGE -->    
+    <section id="diaryPage" class="page active">    
+      <div class="hero">    
+        <h1>Diario Scolastico</h1>    
+        <div class="pill" id="countPill">0 da fare</div>    
+      </div>    
+          
+      <div class="weekbar">    
+        <div class="nav-group">    
+          <button class="round" id="prevWeek" type="button">‹</button>    
+          <button class="round" id="nextWeek" type="button">›</button>    
+          <button class="btn-today" id="todayBtn" type="button">Oggi</button>    
+        </div>    
+        <div class="title" id="weekTitle"></div>    
+      </div>    
+          
+      <div id="week" class="week"></div>    
+    </section>    
+    
+    <!-- CLASSEVIVA SYNC PAGE -->    
+    <section id="cvPage" class="page">    
+      <div class="hero">    
+        <h1>Sincronizzazione ClasseViva</h1>    
+      </div>    
+      <div class="settings">    
+        <div class="panel">    
+          <div id="cvStatus" class="cv-status disconnected">● Non Collegato</div>    
+          <p style="font-size:13px; color:var(--muted); margin-top:0; line-height:1.4;">    
+            Connessione sicura al proxy Render.    
+          </p>    
+          <div class="form">    
+            <div>    
+              <label>Codice Utente / Username</label>    
+              <input id="cvUser" type="text" placeholder="Es. S1234567R">    
+            </div>    
+            <div>    
+              <label>Password</label>    
+              <input id="cvPass" type="password" placeholder="••••••••">    
+            </div>    
+            <div class="actions">    
+              <button class="primary" id="cvConnectBtn" type="button">Connetti e Sincronizza</button>    
+            </div>    
+          </div>    
+          <div class="logbox" id="cvLog">> In attesa di comandi...</div>    
+        </div>    
+      </div>    
+    </section>    
+    
+    <!-- SETTINGS PAGE -->    
+    <section id="settingsPage" class="page">    
+      <div class="hero"><h1>Impostazioni App</h1></div>    
+      <div class="panel">    
+        <div style="display:flex; justify-content:space-between; align-items:center;">    
+          <b>Modalità Scura</b>    
+          <input id="darkSetting" type="checkbox" style="width:20px; height:20px;">    
+        </div>    
+      </div>    
+    </section>    
+  </main>    
+</div>    
+    
+<!-- TASK MODAL -->    
+<div id="taskModal" class="modal">    
+  <div class="sheet">    
+    <h2>Nuovo Compito</h2>    
+    <form id="taskForm" class="form">    
+      <div><label>Data</label><input id="taskDate" type="date" required></div>    
+      <div><label>Materia</label><input id="taskSubject" required placeholder="Es. Matematica"></div>    
+      <div><label>Descrizione Compito</label><textarea id="taskText" rows="4" required placeholder="Inserisci dettagli..."></textarea></div>    
+      <div class="actions">    
+        <button class="secondary" id="cancelTask" type="button">Annulla</button>    
+        <button class="primary" type="submit">Salva Compito</button>    
+      </div>    
+    </form>    
+  </div>    
+</div>    
+    
+<script>    
+(function(){    
+'use strict';    
+    
+var DAYS = ['LUN','MAR','MER','GIO','VEN'];    
+var PROXY_URL = 'https://diarioviva.onrender.com';  
+  
+var state = {    
+  week: new Date(),    
+  tasks: [],    
+  dark: false,    
+  cvConnected: false,    
+  cvUser: ''    
+};    
+    
+function el(id){ return document.getElementById(id); }    
+    
+function iso(d){    
+  var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');    
+  return y + '-' + m + '-' + day;    
+}    
+    
+function monday(d){    
+  var x = new Date(d); x.setHours(12,0,0,0);    
+  var n = x.getDay();    
+  var diff = n === 0 ? -6 : 1 - n;    
+  x.setDate(x.getDate() + diff);    
+  return x;    
+}    
+    
+function addDays(d, n){    
+  var x = new Date(d); x.setDate(x.getDate() + n); return x;    
+}    
+    
+function escapeHTML(s){    
+  return String(s||'').replace(/[&<>"']/g, function(c){    
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];    
+  });    
+}    
+    
+function switchPage(name){    
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });    
+  document.querySelectorAll('.nav button').forEach(function(b){ b.classList.remove('active'); });    
+  if(name === 'diary'){ el('diaryPage').classList.add('active'); el('navDiary').classList.add('active'); }    
+  else if(name === 'cv'){ el('cvPage').classList.add('active'); el('navCV').classList.add('active'); }    
+  else { el('settingsPage').classList.active ? null : el('settingsPage').classList.add('active'); el('navSettings').classList.add('active'); }    
+}    
+    
+function renderDiary(){    
+  var start = monday(state.week), end = addDays(start, 4);    
+  el('weekTitle').textContent = start.toLocaleDateString('it-IT',{day:'numeric',month:'short'}) + ' – ' + end.toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'});    
+      
+  var week = el('week'); week.innerHTML = '';    
+  var pending = 0, total = 0;    
+    
+  for(var i=0; i<5; i++){    
+    var d = addDays(start, i), date = iso(d), box = document.createElement('div');    
+    box.className = 'day';    
+    var tasks = state.tasks.filter(function(t){ return t.date === date; });    
+    tasks.forEach(function(t){ total++; if(!t.done) pending++; });    
+    
+    var h = '<div class="dayhead"><div class="dayname">' + DAYS[i] + '</div><div class="daydate">' + d.toLocaleDateString('it-IT',{day:'numeric',month:'short'}) + '</div></div><div class="tasks">';    
+    if(!tasks.length) h += '<div class="empty">Nessun compito per oggi</div>';    
+        
+    tasks.forEach(function(t){    
+      h += '<div class="task ' + (t.done ? 'done' : '') + '">';    
+      h += '<div class="tasktop"><div class="subject">' + escapeHTML(t.subject) + '</div>';    
+      if(t.isCV) h += '<span class="badge cv">ClasseViva</span>';    
+      h += '</div><div class="tasktext">' + escapeHTML(t.text) + '</div>';    
+      h += '<label class="check"><input type="checkbox" data-task="' + escapeHTML(t.id) + '" ' + (t.done ? 'checked' : '') + '> Completato</label></div>';    
+    });    
+    
+    h += '<button class="add" type="button" data-adddate="' + date + '">+ Aggiungi compito</button></div>';    
+    box.innerHTML = h;    
+    week.appendChild(box);    
+  }    
+    
+  el('countPill').textContent = pending + ' da fare · ' + (total - pending) + ' completati';    
+      
+  document.querySelectorAll('[data-task]').forEach(function(c){    
+    c.addEventListener('change', function(){    
+      var t = state.tasks.find(function(x){ return x.id === c.getAttribute('data-task'); });    
+      if(t){ t.done = c.checked; renderDiary(); }    
+    });    
+  });    
+    
+  document.querySelectorAll('[data-adddate]').forEach(function(b){    
+    b.addEventListener('click', function(){    
+      el('taskDate').value = b.getAttribute('data-adddate');    
+      el('taskModal').classList.add('show');    
+    });    
+  });    
+}    
+    
+function logCV(msg){    
+  var box = el('cvLog');    
+  box.innerHTML += '<br>> ' + escapeHTML(msg);    
+  box.scrollTop = box.scrollHeight;    
+}    
+  
+async function syncClasseViva(){    
+  var user = el('cvUser').value.trim();    
+  var pass = el('cvPass').value.trim();    
+    
+  if(!user || !pass){    
+    logCV('ERRORE: Inserisci Username e Password.');    
+    return;    
+  }    
+    
+  logCV('Connessione al tuo Proxy Render...');    
+    
+  // Tentativo standard  
+  try {    
+    var resAuth = await fetch(PROXY_URL + '/api/login', {    
+      method: 'POST',    
+      headers: { 'Content-Type': 'application/json' },    
+      body: JSON.stringify({ ident: user, pwd: pass })    
+    });    
+    
+    if(!resAuth.ok) throw new Error('Risposta HTTP ' + resAuth.status);    
+    var data = await resAuth.json();    
+  
+    if(data.token) {  
+      logCV('CONNESSO CON SUCCESSO! Token ottenuto.');  
+      el('cvStatus').className = 'cv-status connected';  
+      el('cvStatus').textContent = '● Collegato come ' + (data.firstName || user);  
+      state.cvConnected = true;  
+      return;  
+    } else {  
+      logCV('ERRORE: Credenziali errate o rifiutate da ClasseViva.');  
+      return;  
+    }  
+  } catch(err) {    
+    logCV('Attenzione: richiesta bloccata dal browser (' + err.message + ').');    
+  }    
+  
+  // Fallback se aperto da File Locale dentro Edge/Safari  
+  logCV('Tentativo con Proxy Bypasser per File Locali...');  
+  try {  
+    var fallbackUrl = 'https://corsproxy.io/?' + encodeURIComponent(PROXY_URL + '/api/login');  
+    var resFallback = await fetch(fallbackUrl, {  
+      method: 'POST',  
+      headers: { 'Content-Type': 'application/json' },  
+      body: JSON.stringify({ ident: user, pwd: pass })  
+    });  
+  
+    var data = await resFallback.json();  
+    if(data.token) {  
+      logCV('CONNESSO CON SUCCESSO via Fallback!');  
+      el('cvStatus').className = 'cv-status connected';  
+      el('cvStatus').textContent = '● Collegato come ' + (data.firstName || user);  
+      state.cvConnected = true;  
+    } else {  
+      logCV('ERRORE: Credenziali non valide.');  
+    }  
+  } catch(errFallback) {  
+    logCV('ERRORE CRITICO: Il browser blinda i file locali.');  
+    logCV('SOLUZIONE: Apri il file con SAFARI anziché Edge, oppure attiva GitHub Pages.');  
+  }  
+}    
+    
+function init(){    
+  renderDiary();    
+  el('navDiary').addEventListener('click', function(){ switchPage('diary'); });    
+  el('navCV').addEventListener('click', function(){ switchPage('cv'); });    
+  el('navSettings').addEventListener('click', function(){ switchPage('settings'); });    
+      
+  el('prevWeek').addEventListener('click', function(){ state.week = addDays(state.week, -7); renderDiary(); });    
+  el('nextWeek').addEventListener('click', function(){ state.week = addDays(state.week, 7); renderDiary(); });    
+  el('todayBtn').addEventListener('click', function(){ state.week = new Date(); renderDiary(); });    
+      
+  el('cancelTask').addEventListener('click', function(){ el('taskModal').classList.remove('show'); });    
+  el('cvConnectBtn').addEventListener('click', syncClasseViva);    
+    
+  el('taskForm').addEventListener('submit', function(e){  
+    e.preventDefault();  
+    state.tasks.push({  
+      id: 't_' + Date.now(),  
+      date: el('taskDate').value,  
+      subject: el('taskSubject').value,  
+      text: el('taskText').value,  
+      done: false,  
+      isCV: false  
+    });  
+    el('taskModal').classList.remove('show');  
+    el('taskForm').reset();  
+    renderDiary();  
+  });  
+      
+  el('darkBtn').addEventListener('click', function(){    
+    state.dark = !state.dark;    
+    document.body.classList.toggle('dark', state.dark);    
+  });    
+}    
+    
+document.addEventListener('DOMContentLoaded', init);    
+})();    
+</script>    
+</body>    
+</html>  
